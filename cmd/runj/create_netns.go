@@ -80,5 +80,69 @@ func create_netnsCommand() *cobra.Command{
 		}else if consoleSocket != "" {
 			return errors.New("console-socket provided but Process. Terminal is false")
 		}
+
+		jailcfg := &jail.Config{
+			Name:		id,
+			Root:		rootPath,
+			Hostname:	ociConfig.Hostname,
+		}
+		if ociConfig.FreeBSD != nil && ociConfig.FreeBSD.Network != nil {
+			if ociConfig.FreeBSD.Network.IPv4 != nil {
+				jailcfg.IP4 = string(ociConfig.FreeBSD.Network.IPv4.Mode)
+				jailcfg.IP4Addr = ociConfig.FreeBSD.Network.IPv4.Addr
+			}
+			if ociConfig.FreeBSD.Network.VNet != nil {
+				jailcfg.VNet = string(ociConfig.FreeBSD.Network.VNet.Mode)
+				jailcfg.VNetInterface = ociConfig.FreeBSD.Network.VNet.Interfaces
+			}
+		}
+
+		var confPath string
+		confPath, err = jail.CreateConfig(jailcfg) // ここらへんを変える
+		if err != nil{
+			return err
+		}
+		if err := jail.CreateJail(cmd.Context(), confPath); err != nil {
+			return err
+		}
+		err = jail.Mount(ociConfig) // ociConfig構造体の中身見たい
+		if err != nil {
+			return err
+		}
+		defer func() {
+			if err == nil {
+				return
+			}
+			jail.Unmount(ociConfig)
+		}()
+
+		var entrypoint *exec.Cmd
+		entrypoint, err = jail.SetupEntrypoint(id, true, ociConfig.Process.Args, ociConfig.Process.Env, consoleSocket)
+		if err != nil{
+			return err
+		}
+
+		s.PID = entrypoint.Process.Pid // entrypoint is なに
+		if pidFile != "" {
+			pidValue := strconv.Itoa(s.PID)
+			err = os.WriteFile(pidFile, []byte(pidValue), 0o666)
+			if err != nil {
+				return err
+			}
+		}
+
+		if ociConfig.Hooks != nil {
+			for _, h := range ociCofig.Hooks.CreateRuntime {
+				output := s.Output()
+				output.Annotations = ociConfig.Annotations
+				err = hook.Run(&output, &h)
+				if err != nil {
+					return err
+				}
+			}
+		}
+
+		return nil
 	}
+	return create_netns
 }
