@@ -30,25 +30,10 @@ func create_netnsCommand() *cobra.Command{
 	*/
 	create_netns.RunE = func(cmd *cobra.command, args []string) (err error) { /* 実行部 */
 		disableUsage(cmd) /* usage出力の無効化 */
-		var s *state.State /* id, jid, Status, Bundle, pid */
-		s, err = state.Create(id, bundle) /* /var/run/runj/jails/<id>にステータスファイルを作成 */
-		if err != nil {
-			return err
-		}
-		defer func() {
-			if err == nil {
-				s.Status = state.StatusCreated
-				err = s.Save()
-			} else {
-				state.Remove(id)
-			}
-		}()
-		err = oci.StoreConfig(id, bundle) /* コンテナディレクトリにconfig.jsonをコピー */
-		if err != nil {
-			return err
-		}
+
+		bundle = ""
 		var ociConfig *runtimespec.Spec /* spec情報構造体 */
-		ociConfig, err = oci.LoadConfig(id) /* config情報のロード */
+		ociConfig, err = oci.setNetnsConf(id) /* config情報のロード */
 		if err != nil {
 			return err
 		}
