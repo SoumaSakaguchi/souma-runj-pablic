@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"go.sbk.wtf/runj/hook"
-	"go.sbk.wtf/runj/runj"
+	"go.sbk.wtf/runj/jail"
 	"go.sbk.wtf/runj/oci"
 	"go.sbk.wtf/runj/runtimespec"
 	"go.sbk.wtf/runj/state"
