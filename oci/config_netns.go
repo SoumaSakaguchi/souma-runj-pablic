@@ -7,22 +7,31 @@ import (
 	"go.sbk.wtf/runj/runtimespec"
 )
 
-func setNetnsConf() (*runtimespec.Spec, error) {
+func setNetnsConf() (*runtimespec.Spec) {
 	config := *runtimespec.Spec{}
 
 	config.Version = runtimespec.Version
-	config.Process = {
-		false,
-		["/usr/bin/sh"],
-		["PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"]
+	config.Process = &runtimespec.Process{
+		Terminal: false,
+		Args: []string{
+			"/usr/bin/sh",
+		},
+		Env: []string{
+			"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+			"TERM=xterm",
+		},
 	}
-	cofig.Root = {
-		"/"
+	config.Root = &runtimespec.Root{
+		Path: "/",
 	}
 	config.Hostname = "netns"
-	config.FreeBSD = {
-		{nil,{"new",nil}}
+	config.FreeBSD = &runtimespec.FreeBSD{
+		Network: &runtimespec.FreeBSDNetwork{
+			VNet: &runtimespec.FreeBSDVNet{
+				Mode: runtimespec.FreeBSDVNetModeNew,
+			},
+		},
 	}
 
-	return config, nil
+	return config
 }
