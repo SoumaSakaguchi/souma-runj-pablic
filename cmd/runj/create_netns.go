@@ -14,45 +14,23 @@ import (
 
 func create_netnsCommand() *cobra.Command{
 	create_netns := &cobra.Command{
-		Use: "crate_netns",
+		Use: "crate_netns <netns-id>",
 		Short: "Create a new vnet jail like Network Namesapce.",
 		Long: "Atode kakuyo!!!"
+		Args: cobra.ExactArgs(1)
 	}
-	/*
-	// flagの追加
-	flags := create_netns.Flags()
-	flags.StringVerP{
-		&bundle,
-		"bundle",
-		"b",
-		"",
-		"path to the root of the bundle directory")
-	*/
 	create_netns.RunE = func(cmd *cobra.command, args []string) (err error) { /* 実行部 */
 		disableUsage(cmd) /* usage出力の無効化 */
-
-		bundle = ""
+		id := args[0]
 		var ociConfig *runtimespec.Spec /* spec情報構造体 */
-		ociConfig, err = oci.setNetnsConf(id) /* config情報のロード */
-		if err != nil {
-			return err
-		}
+		ociConfig = oci.setNetnsConf(string(id)) /* config情報のロード */
 		if ociConfig == nil {
 			return errors.New("OCI config is required")
 		}
 		if ociConfig.Process == nil{
 			return errors.New("OCI config Process is required")
 		}
-		rootPath := filepath.Join(bundle, "root")
-		if ociConfig.Root != nil && ociConfig.Root.Path != "" {
-			rootPath = ociConfig.Root.Path
-			if rootPath[0] != filepath.Separator {
-				rootPath = filepath.Join(bundle, rootPath)
-			}
-			ociConfig.Root.Path = rootPath
-		} else {
-			ociConfig.Root = &runtimespec.Root{Path: rootPath}
-		}
+		rootPath := ociConfig.Root.Path
 
 		if ociConfig.Process.Terminal {
 			if consoleSocket == "" {
@@ -84,14 +62,14 @@ func create_netnsCommand() *cobra.Command{
 		}
 
 		var confPath string
-		confPath, err = jail.CreateConfig(jailcfg) // ここらへんを変える
+		confPath, err = jail.CreateConfig(jailcfg)
 		if err != nil{
 			return err
 		}
 		if err := jail.CreateJail(cmd.Context(), confPath); err != nil {
 			return err
 		}
-		err = jail.Mount(ociConfig) // ociConfig構造体の中身見たい
+		err = jail.Mount(ociConfig)
 		if err != nil {
 			return err
 		}

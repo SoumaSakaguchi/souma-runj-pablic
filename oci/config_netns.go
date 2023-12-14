@@ -7,7 +7,7 @@ import (
 	"go.sbk.wtf/runj/runtimespec"
 )
 
-func setNetnsConf() (*runtimespec.Spec) {
+func setNetnsConf(id string) (*runtimespec.Spec) {
 	config := *runtimespec.Spec{}
 
 	config.Version = runtimespec.Version
@@ -24,7 +24,7 @@ func setNetnsConf() (*runtimespec.Spec) {
 	config.Root = &runtimespec.Root{
 		Path: "/",
 	}
-	config.Hostname = "netns"
+	config.Hostname = id
 	config.FreeBSD = &runtimespec.FreeBSD{
 		Network: &runtimespec.FreeBSDNetwork{
 			VNet: &runtimespec.FreeBSDVNet{
