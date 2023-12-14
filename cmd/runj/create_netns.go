@@ -2,17 +2,15 @@ package main
 
 import (
 	"errors"
-	"fmt"
-	"os"
-	"os/exec"
-	"path/filepath"
-	"strconv"
+	//"strconv"
 
-	"go.sbk.wtf/runj/hook"
+	//"go.sbk.wtf/runj/hook"
 	"go.sbk.wtf/runj/jail"
 	"go.sbk.wtf/runj/oci"
 	"go.sbk.wtf/runj/runtimespec"
-	"go.sbk.wtf/runj/state"
+	//"go.sbk.wtf/runj/state"
+
+	"souma-runj/oci"
 
 	"github.com/spf13/cobra"
 )
@@ -24,7 +22,7 @@ func create_netnsCommand() *cobra.Command{
 		Long: "Atode kakuyo!!!",
 		Args: cobra.ExactArgs(1),
 	}
-	create_netns.RunE = func(cmd *cobra.command, args []string) (err error) { /* 実行部 */
+	create_netns.RunE = func(cmd *cobra.Command, args []string) (err error) { /* 実行部 */
 		disableUsage(cmd) /* usage出力の無効化 */
 		id := args[0]
 		var ociConfig *runtimespec.Spec /* spec情報構造体 */
@@ -72,14 +70,14 @@ func create_netnsCommand() *cobra.Command{
 			jail.Unmount(ociConfig)
 		}()
 
+		/*
 		var entrypoint *exec.Cmd
 		entrypoint, err = jail.SetupEntrypoint(id, true, ociConfig.Process.Args, ociConfig.Process.Env, consoleSocket)
 		if err != nil{
 			return err
 		}
-
 		if ociConfig.Hooks != nil {
-			for _, h := range ociCofig.Hooks.CreateRuntime {
+			for _, h := range ociConfig.Hooks.CreateRuntime {
 				output := s.Output()
 				output.Annotations = ociConfig.Annotations
 				err = hook.Run(&output, &h)
@@ -88,6 +86,7 @@ func create_netnsCommand() *cobra.Command{
 				}
 			}
 		}
+		*/
 
 		return nil
 	}
