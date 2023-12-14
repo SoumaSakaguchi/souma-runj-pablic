@@ -1,7 +1,12 @@
 package main
 
 import (
+	"errors"
 	"fmt"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"strconv"
 
 	"go.sbk.wtf/runj/hook"
 	"go.sbk.wtf/runj/jail"
@@ -16,8 +21,8 @@ func create_netnsCommand() *cobra.Command{
 	create_netns := &cobra.Command{
 		Use: "crate_netns <netns-id>",
 		Short: "Create a new vnet jail like Network Namesapce.",
-		Long: "Atode kakuyo!!!"
-		Args: cobra.ExactArgs(1)
+		Long: "Atode kakuyo!!!",
+		Args: cobra.ExactArgs(1),
 	}
 	create_netns.RunE = func(cmd *cobra.command, args []string) (err error) { /* 実行部 */
 		disableUsage(cmd) /* usage出力の無効化 */
@@ -31,19 +36,6 @@ func create_netnsCommand() *cobra.Command{
 			return errors.New("OCI config Process is required")
 		}
 		rootPath := ociConfig.Root.Path
-
-		if ociConfig.Process.Terminal {
-			if consoleSocket == "" {
-				return errors.New("console-socket provided but Process. Terminal is true")
-			}
-			if socketStat, err := os.Stat(consoleSocket); err != nil {
-				return fmt.Errorf("faild to stat console socket %q: %w", consoleSocket, err)
-			} else if socketStat.Mode()&os.ModeSocket != os.ModeSocket {
-				return fmt.Errorf("console-socket %q is not a socket", consoleSocket)
-			}
-		}else if consoleSocket != "" {
-			return errors.New("console-socket provided but Process. Terminal is false")
-		}
 
 		jailcfg := &jail.Config{
 			Name:		id,
@@ -84,15 +76,6 @@ func create_netnsCommand() *cobra.Command{
 		entrypoint, err = jail.SetupEntrypoint(id, true, ociConfig.Process.Args, ociConfig.Process.Env, consoleSocket)
 		if err != nil{
 			return err
-		}
-
-		s.PID = entrypoint.Process.Pid // entrypoint is なに
-		if pidFile != "" {
-			pidValue := strconv.Itoa(s.PID)
-			err = os.WriteFile(pidFile, []byte(pidValue), 0o666)
-			if err != nil {
-				return err
-			}
 		}
 
 		if ociConfig.Hooks != nil {

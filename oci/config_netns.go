@@ -1,14 +1,11 @@
 package oci
 
 import (
-	"encoding/json"
-	"os"
-
 	"go.sbk.wtf/runj/runtimespec"
 )
 
 func setNetnsConf(id string) (*runtimespec.Spec) {
-	config := *runtimespec.Spec{}
+	config := runtimespec.Spec{}
 
 	config.Version = runtimespec.Version
 	config.Process = &runtimespec.Process{
@@ -33,5 +30,5 @@ func setNetnsConf(id string) (*runtimespec.Spec) {
 		},
 	}
 
-	return config
+	return &config
 }
