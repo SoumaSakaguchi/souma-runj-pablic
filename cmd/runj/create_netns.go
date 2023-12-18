@@ -2,22 +2,16 @@ package main
 
 import (
 	"errors"
-	//"strconv"
 
-	//"go.sbk.wtf/runj/hook"
 	"go.sbk.wtf/runj/jail"
-	"go.sbk.wtf/runj/oci"
 	"go.sbk.wtf/runj/runtimespec"
-	//"go.sbk.wtf/runj/state"
-
-	"souma-runj/oci"
 
 	"github.com/spf13/cobra"
 )
 
 func create_netnsCommand() *cobra.Command{
 	create_netns := &cobra.Command{
-		Use: "crate_netns <netns-id>",
+		Use: "create_netns <netns-id>",
 		Short: "Create a new vnet jail like Network Namesapce.",
 		Long: "Atode kakuyo!!!",
 		Args: cobra.ExactArgs(1),
@@ -26,7 +20,7 @@ func create_netnsCommand() *cobra.Command{
 		disableUsage(cmd) /* usage出力の無効化 */
 		id := args[0]
 		var ociConfig *runtimespec.Spec /* spec情報構造体 */
-		ociConfig = oci.setNetnsConf(string(id)) /* config情報のロード */
+		ociConfig = setNetnsConf(string(id)) /* config情報のロード */
 		if ociConfig == nil {
 			return errors.New("OCI config is required")
 		}
@@ -70,25 +64,36 @@ func create_netnsCommand() *cobra.Command{
 			jail.Unmount(ociConfig)
 		}()
 
-		/*
-		var entrypoint *exec.Cmd
-		entrypoint, err = jail.SetupEntrypoint(id, true, ociConfig.Process.Args, ociConfig.Process.Env, consoleSocket)
-		if err != nil{
-			return err
-		}
-		if ociConfig.Hooks != nil {
-			for _, h := range ociConfig.Hooks.CreateRuntime {
-				output := s.Output()
-				output.Annotations = ociConfig.Annotations
-				err = hook.Run(&output, &h)
-				if err != nil {
-					return err
-				}
-			}
-		}
-		*/
-
 		return nil
 	}
 	return create_netns
+}
+
+func setNetnsConf(id string) (*runtimespec.Spec) {
+	config := runtimespec.Spec{}
+
+	config.Version = runtimespec.Version
+	config.Process = &runtimespec.Process{
+		Terminal: false,
+		Args: []string{
+			"/usr/bin/sh",
+		},
+		Env: []string{
+			"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+			"TERM=xterm",
+		},
+	}
+	config.Root = &runtimespec.Root{
+		Path: "/",
+	}
+	config.Hostname = id
+	config.FreeBSD = &runtimespec.FreeBSD{
+		Network: &runtimespec.FreeBSDNetwork{
+			VNet: &runtimespec.FreeBSDVNet{
+				Mode: runtimespec.FreeBSDVNetModeNew,
+			},
+		},
+	}
+
+	return &config
 }
