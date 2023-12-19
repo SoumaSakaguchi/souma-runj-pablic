@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"errors"
 
 	"go.sbk.wtf/runj/jail"
@@ -45,10 +46,15 @@ func create_netnsCommand() *cobra.Command{
 			}
 		}
 
+		fmt.Printf("%#v\n", ociConfig)
+		fmt.Printf("%#v\n", jailcfg)
+
 		var confPath string
 		confPath, err = jail.CreateConfig(jailcfg)
 		if err != nil{
 			return err
+		} else {
+			fmt.Printf("%v\n", confPath)
 		}
 		if err := jail.CreateJail(cmd.Context(), confPath); err != nil {
 			return err
