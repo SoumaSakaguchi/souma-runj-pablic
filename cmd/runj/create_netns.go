@@ -6,6 +6,7 @@ import (
 
 	"go.sbk.wtf/runj/jail"
 	"go.sbk.wtf/runj/runtimespec"
+	"go.sbk.wtf/runj/state"
 
 	"github.com/spf13/cobra"
 )
@@ -20,6 +21,13 @@ func create_netnsCommand() *cobra.Command{
 	create_netns.RunE = func(cmd *cobra.Command, args []string) (err error) { /* 実行部 */
 		disableUsage(cmd) /* usage出力の無効化 */
 		id := args[0]
+
+		var s *state.State
+		s, err = state.Create(id, "")
+		if err != nil {
+			return err
+		}
+
 		var ociConfig *runtimespec.Spec /* spec情報構造体 */
 		ociConfig = setNetnsConf(string(id)) /* config情報のロード */
 		if ociConfig == nil {
@@ -46,15 +54,10 @@ func create_netnsCommand() *cobra.Command{
 			}
 		}
 
-		fmt.Printf("%#v\n", ociConfig)
-		fmt.Printf("%#v\n", jailcfg)
-
 		var confPath string
 		confPath, err = jail.CreateConfig(jailcfg)
 		if err != nil{
 			return err
-		} else {
-			fmt.Printf("%v\n", confPath)
 		}
 		if err := jail.CreateJail(cmd.Context(), confPath); err != nil {
 			return err
