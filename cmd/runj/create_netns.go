@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"errors"
 
 	"go.sbk.wtf/runj/jail"
@@ -27,7 +26,14 @@ func create_netnsCommand() *cobra.Command{
 		if err != nil {
 			return err
 		}
-
+		defer func() {
+			if err != nil {
+				s.Status = state.StatusCreated
+				err = s.Save()
+			} else {
+				state.Remove(id)
+			}
+		}()
 		var ociConfig *runtimespec.Spec /* spec情報構造体 */
 		ociConfig = setNetnsConf(string(id)) /* config情報のロード */
 		if ociConfig == nil {
