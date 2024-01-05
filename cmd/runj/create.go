@@ -114,7 +114,7 @@ written`)
 		false,
 		`netns-compatible mode`)
 	create.RunE = func(cmd *cobra.Command, args []string) (err error) {
-		if(netnsCompat){
+		if netnsCompat {
 			fmt.Println("netns-Compatible mode ON")
 		}
 		disableUsage(cmd)
@@ -147,6 +147,16 @@ written`)
 		if ociConfig.Process == nil {
 			return errors.New("OCI config Process is required")
 		}
+		/*
+		if netns-compat {
+			fmt.Println(ociConfig.FreeBSD.Network.VNet.Mode)
+			if ociConfig.FreeBSD.Network.VNet.Mode == "new" {
+				//var s_ns *state.State
+				//s_ns, err = state.Create()
+				ociConfig.FreeBSD.Network.VNet.Mode = "inherit"
+			}
+		}
+		*/
 		rootPath := filepath.Join(bundle, "root")
 		if ociConfig.Root != nil && ociConfig.Root.Path != "" {
 			rootPath = ociConfig.Root.Path
@@ -182,8 +192,24 @@ written`)
 				jailcfg.IP4Addr = ociConfig.FreeBSD.Network.IPv4.Addr
 			}
 			if ociConfig.FreeBSD.Network.VNet != nil {
-				jailcfg.VNet = string(ociConfig.FreeBSD.Network.VNet.Mode)
-				jailcfg.VNetInterface = ociConfig.FreeBSD.Network.VNet.Interfaces
+				if netnsCompat {
+					if ociConfig.FreeBSD.Network.VNet.Mode == "new" { /* create new netns & nest container */
+
+					} else if ociConfig.FreeBSD.Network.VNet.Mode == "share" { /* nest container in existing netns */
+						if ociConfig.FreeBSD.Network.VNet.JID == nil {
+							return fmt.Errorf("VNet.Mode=share requires netns Jail ID")
+						}
+						jailcfg.VNet = "inherit"
+						jailcfg.VNetInterface = ociConfig.FreeBSD.Network.VNet.Interfaces
+						var netnsJID = string(ociConfig.FreeBSD.Network.VNet.JID) // netns jailID
+					} else if ociConfig.FreeBSD.Network.VNet.Mode == "inherit" { /* create container without vnet */
+						jailcfg.VNet = string(ociConfig.FreeBSD.Network.VNet.Mode)
+						jailcfg.VNetInterface = ociConfig.FreeBSD.Network.VNnet.Interfaces
+					}
+				} else { /* create container (vnet or inherit) */
+					jailcfg.VNet = string(ociConfig.FreeBSD.Network.VNet.Mode)
+					jailcfg.VNetInterface = ociConfig.FreeBSD.Network.VNet.Interfaces
+				}
 			}
 		}
 

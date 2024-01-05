@@ -224,11 +224,14 @@ type FreeBSDVNet struct {
 	// the interfaces are moved into the jail and are inaccessible from the
 	// host.
 	Interfaces []string `json:"interfaces,omitempty"`
+
+	JID string `json:"jid,omitempty"`
 }
 
 const (
 	FreeBSDVNetModeNew     FreeBSDVNetMode = "new"
 	FreeBSDVNetModeInherit                 = "inherit"
+	FreeBSDVNetModeShare                   = "share"
 )
 
 type FreeBSDVNetMode string
