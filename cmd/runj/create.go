@@ -51,6 +51,7 @@ func createCommand() *cobra.Command {
 		bundle        string
 		consoleSocket string
 		pidFile       string
+		netnsCompat   bool
 	)
 
 	create := &cobra.Command{
@@ -107,7 +108,14 @@ the console's pseudoterminal`)
 		"",
 		`specify a file where the process ID will be
 written`)
+	flags.boolVar(
+		&netnsCompat,
+		"netns-compat",
+		false,
+		'netns-compatible mode'
+	)
 	create.RunE = func(cmd *cobra.Command, args []string) (err error) {
+		if(netnsCompat) fmt.Println("netns-Compatible mode ON")
 		disableUsage(cmd)
 		id := args[0]
 		var s *state.State
