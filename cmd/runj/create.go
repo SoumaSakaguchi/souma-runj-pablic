@@ -147,16 +147,7 @@ written`)
 		if ociConfig.Process == nil {
 			return errors.New("OCI config Process is required")
 		}
-		/*
-		if netns-compat {
-			fmt.Println(ociConfig.FreeBSD.Network.VNet.Mode)
-			if ociConfig.FreeBSD.Network.VNet.Mode == "new" {
-				//var s_ns *state.State
-				//s_ns, err = state.Create()
-				ociConfig.FreeBSD.Network.VNet.Mode = "inherit"
-			}
-		}
-		*/
+
 		rootPath := filepath.Join(bundle, "root")
 		if ociConfig.Root != nil && ociConfig.Root.Path != "" {
 			rootPath = ociConfig.Root.Path
@@ -186,6 +177,13 @@ written`)
 			Root:     rootPath,
 			Hostname: ociConfig.Hostname,
 		}
+
+		var (
+			nsState    *state.State
+			nsJailcfg  jail.Config
+			nsConfPath string
+			netnsID    string
+		)
 		if ociConfig.FreeBSD != nil && ociConfig.FreeBSD.Network != nil {
 			if ociConfig.FreeBSD.Network.IPv4 != nil {
 				jailcfg.IP4 = string(ociConfig.FreeBSD.Network.IPv4.Mode)
@@ -194,9 +192,8 @@ written`)
 			if ociConfig.FreeBSD.Network.VNet != nil {
 				if netnsCompat {
 					if ociConfig.FreeBSD.Network.VNet.Mode == "new" { /* create new netns & nest container */
-						var nsState *state.State
-						nsState, err = state.Create("netns", nil)
-						if err {
+						nsState, err = state.Create("netns", "")
+						if err != nil {
 							return err
 						}
 						defer func() {
@@ -207,13 +204,13 @@ written`)
 							}
 						}()
 
-						nsJailcfg := &jail.Config{
-							Name:     "netns"
-							Root:     "/"
-							Hostname: "netns"
-							VNet:     "new"
+						nsJailcfg = &jail.Config{
+							Name:     "netns",
+							Root:     "/",
+							Hostname: "netns",
+							VNet:     "new",
 						}
-						var nsConfPath string
+						netnsJID = nsJailcfg.Name
 						nsConfPath, err = jail.CreateConfig(nsJailcfg)
 						if err != nil {
 							return err
@@ -221,12 +218,13 @@ written`)
 						fmt.Println(nsConfPath)
 						jailcfg.VNet = "inherit"
 					} else if ociConfig.FreeBSD.Network.VNet.Mode == "share" { /* nest container in existing netns */
-						if ociConfig.FreeBSD.Network.VNet.JID == nil {
+						if ociConfig.FreeBSD.Network.VNet.JID == "" {
 							return fmt.Errorf("VNet.Mode==share requires netns Jail ID")
 						}
 						jailcfg.VNet = "inherit"
 						jailcfg.VNetInterface = ociConfig.FreeBSD.Network.VNet.Interfaces
-						var netnsJID = string(ociConfig.FreeBSD.Network.VNet.JID) // netns jailID
+						netnsJID = string(ociConfig.FreeBSD.Network.VNet.JID) // netns jailID
+						fmt.Println(netnsJID)
 					} else if ociConfig.FreeBSD.Network.VNet.Mode == "inherit" { /* create container without vnet */
 						jailcfg.VNet = string(ociConfig.FreeBSD.Network.VNet.Mode)
 						jailcfg.VNetInterface = ociConfig.FreeBSD.Network.VNnet.Interfaces
@@ -235,7 +233,7 @@ written`)
 					if ociConfig.FreeBSD.Network.VNet.Mode == "share" {
 						return fmt.Errorf("VNet.Mode==share is option added for --netns-compat")
 					}
-					if ociConfig.FreeBSD.Network.VNet.JID != nil {
+					if ociConfig.FreeBSD.Network.VNet.JID != "" {
 						return fmt.Errorf("VNet.JID is option added for --netns-compat")
 					}
 					jailcfg.VNet = string(ociConfig.FreeBSD.Network.VNet.Mode)
@@ -249,9 +247,25 @@ written`)
 		if err != nil {
 			return err
 		}
-		if err := jail.CreateJail(cmd.Context(), confPath); err != nil {
-			return err
+		if netnsCompat && netnsJID != ""{
+			if ociConfig.FreeBSD.Network.VNet.Mode == "new" {
+				if err := jail.Createjail(cmd.Context(), nsConfPath); err != nil {
+					return err
+				}
+				if err := jail.CreateNestedjail(cmd.Context(), confPath, netnsID); err != nil {
+					return err
+				}
+			} else if ociConfig.FreeBSD.Network.VNet.Mode == "share" {
+				if err := jail.CreateNestedjail(cmd.Context(), confPath, netnsID); err != nil {
+					return err
+				}
+			}
+		} else {
+			if err := jail.CreateJail(cmd.Context(), confPath); err != nil {
+				return err
+			}
 		}
+
 		err = jail.Mount(ociConfig)
 		if err != nil {
 			return err
@@ -295,4 +309,13 @@ written`)
 		return nil
 	}
 	return create
+}
+
+func CreateNestedJail(ctx context.Context, confPath string, jid string) error {
+	cmd := exec.CommandContext(ctx, "jexec", jid, "jail", "-cf", confPath)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, string(out))
+	}
+	return err
 }
