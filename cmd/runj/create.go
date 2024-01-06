@@ -194,10 +194,35 @@ written`)
 			if ociConfig.FreeBSD.Network.VNet != nil {
 				if netnsCompat {
 					if ociConfig.FreeBSD.Network.VNet.Mode == "new" { /* create new netns & nest container */
+						var nsState *state.State
+						nsState, err = state.Create("netns", nil)
+						if err {
+							return err
+						}
+						defer func() {
+							if err == nil {
+								nsState.Status = state.StatusCreated
+							} else {
+								state.Remove("netns")
+							}
+						}()
 
+						nsJailcfg := &jail.Config{
+							Name:     "netns"
+							Root:     "/"
+							Hostname: "netns"
+							VNet:     "new"
+						}
+						var nsConfPath string
+						nsConfPath, err = jail.CreateConfig(nsJailcfg)
+						if err != nil {
+							return err
+						}
+						fmt.Println(nsConfPath)
+						jailcfg.VNet = "inherit"
 					} else if ociConfig.FreeBSD.Network.VNet.Mode == "share" { /* nest container in existing netns */
 						if ociConfig.FreeBSD.Network.VNet.JID == nil {
-							return fmt.Errorf("VNet.Mode=share requires netns Jail ID")
+							return fmt.Errorf("VNet.Mode==share requires netns Jail ID")
 						}
 						jailcfg.VNet = "inherit"
 						jailcfg.VNetInterface = ociConfig.FreeBSD.Network.VNet.Interfaces
@@ -207,6 +232,12 @@ written`)
 						jailcfg.VNetInterface = ociConfig.FreeBSD.Network.VNnet.Interfaces
 					}
 				} else { /* create container (vnet or inherit) */
+					if ociConfig.FreeBSD.Network.VNet.Mode == "share" {
+						return fmt.Errorf("VNet.Mode==share is option added for --netns-compat")
+					}
+					if ociConfig.FreeBSD.Network.VNet.JID != nil {
+						return fmt.Errorf("VNet.JID is option added for --netns-compat")
+					}
 					jailcfg.VNet = string(ociConfig.FreeBSD.Network.VNet.Mode)
 					jailcfg.VNetInterface = ociConfig.FreeBSD.Network.VNet.Interfaces
 				}
