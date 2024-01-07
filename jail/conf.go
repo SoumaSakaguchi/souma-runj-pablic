@@ -31,7 +31,7 @@ const (
   vnet.interface = "{{ join .VNetInterface ", " }}";
 {{- end }}
 {{- if gt .ChildrenMax 0 }}
-  chidren.max = {{.ChildrenMax}};
+  children.max = {{.ChildrenMax}};
 {{- end }}
 persist;
 }

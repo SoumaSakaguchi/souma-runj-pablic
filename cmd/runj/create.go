@@ -189,11 +189,12 @@ written`)
 			if ociConfig.FreeBSD.Network.VNet != nil {
 				if netnsCompat {
 					if ociConfig.FreeBSD.Network.VNet.Mode == "new" { /* create new netns & nest container */
-						netnsID := "netns1"
+						netnsID = "netns1"
 						nsState, err = state.Create(netnsID, "")
 						if err != nil {
 							return err
 						}
+						fmt.Println("no err in state.Create")
 						defer func() {
 							if err == nil {
 								nsState.Status = state.StatusCreated
@@ -202,10 +203,12 @@ written`)
 							}
 						}()
 
-						nsJailcfg.Name = netnsID
-						nsJailcfg.Root = "/"
-						nsJailcfg.VNet = "new"
-						nsJailcfg.ChildrenMax = 20
+						nsJailcfg = &jail.Config {
+							Name:        netnsID,
+							Root:        "/",
+							VNet:        "new",
+							ChildrenMax: 20,
+						}
 
 						nsConfPath, err = jail.CreateConfig(nsJailcfg)
 						if err != nil {
@@ -241,8 +244,12 @@ written`)
 		if err != nil {
 			return err
 		}
+		fmt.Println(netnsCompat)
+		fmt.Println(netnsID)
 		if netnsCompat && netnsID != ""{
+			fmt.Println("---1---")
 			if ociConfig.FreeBSD.Network.VNet.Mode == "new" {
+				fmt.Println("---2---")
 				if err := jail.CreateJail(cmd.Context(), nsConfPath); err != nil {
 					return err
 				}
@@ -250,11 +257,13 @@ written`)
 					return err
 				}
 			} else if ociConfig.FreeBSD.Network.VNet.Mode == "share" {
+				fmt.Println("---3---")
 				if err := jail.CreateNestedJail(cmd.Context(), confPath, netnsID); err != nil {
 					return err
 				}
 			}
 		} else {
+			fmt.Println("---4---")
 			if err := jail.CreateJail(cmd.Context(), confPath); err != nil {
 				return err
 			}
