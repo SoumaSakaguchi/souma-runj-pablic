@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -180,7 +181,7 @@ written`)
 
 		var (
 			nsState    *state.State
-			nsJailcfg  jail.Config
+			nsJailcfg  *jail.Config
 			nsConfPath string
 			netnsID    string
 		)
@@ -204,13 +205,12 @@ written`)
 							}
 						}()
 
-						nsJailcfg = &jail.Config{
-							Name:     "netns",
-							Root:     "/",
-							Hostname: "netns",
-							VNet:     "new",
-						}
-						netnsJID = nsJailcfg.Name
+						nsJailcfg.Name = "netns"
+						nsJailcfg.Root = "/"
+						nsJailcfg.Hostname = "netns"
+						nsJailcfg.VNet = "new"
+
+						netnsID = nsJailcfg.Name
 						nsConfPath, err = jail.CreateConfig(nsJailcfg)
 						if err != nil {
 							return err
@@ -223,11 +223,11 @@ written`)
 						}
 						jailcfg.VNet = "inherit"
 						jailcfg.VNetInterface = ociConfig.FreeBSD.Network.VNet.Interfaces
-						netnsJID = string(ociConfig.FreeBSD.Network.VNet.JID) // netns jailID
-						fmt.Println(netnsJID)
+						netnsID = string(ociConfig.FreeBSD.Network.VNet.JID) // netns jailID
+						fmt.Println(netnsID)
 					} else if ociConfig.FreeBSD.Network.VNet.Mode == "inherit" { /* create container without vnet */
 						jailcfg.VNet = string(ociConfig.FreeBSD.Network.VNet.Mode)
-						jailcfg.VNetInterface = ociConfig.FreeBSD.Network.VNnet.Interfaces
+						jailcfg.VNetInterface = ociConfig.FreeBSD.Network.VNet.Interfaces
 					}
 				} else { /* create container (vnet or inherit) */
 					if ociConfig.FreeBSD.Network.VNet.Mode == "share" {
@@ -247,16 +247,16 @@ written`)
 		if err != nil {
 			return err
 		}
-		if netnsCompat && netnsJID != ""{
+		if netnsCompat && netnsID != ""{
 			if ociConfig.FreeBSD.Network.VNet.Mode == "new" {
-				if err := jail.Createjail(cmd.Context(), nsConfPath); err != nil {
+				if err := jail.CreateJail(cmd.Context(), nsConfPath); err != nil {
 					return err
 				}
-				if err := jail.CreateNestedjail(cmd.Context(), confPath, netnsID); err != nil {
+				if err := CreateNestedJail(cmd.Context(), confPath, netnsID); err != nil {
 					return err
 				}
 			} else if ociConfig.FreeBSD.Network.VNet.Mode == "share" {
-				if err := jail.CreateNestedjail(cmd.Context(), confPath, netnsID); err != nil {
+				if err := CreateNestedJail(cmd.Context(), confPath, netnsID); err != nil {
 					return err
 				}
 			}
