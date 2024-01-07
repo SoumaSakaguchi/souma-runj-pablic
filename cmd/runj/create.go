@@ -9,8 +9,10 @@ import (
 	"path/filepath"
 	"strconv"
 
+	"github.com/oss-fun/souma-runj/jail"
+
 	"go.sbk.wtf/runj/hook"
-	"go.sbk.wtf/runj/jail"
+	//"go.sbk.wtf/runj/jail"
 	"go.sbk.wtf/runj/oci"
 	"go.sbk.wtf/runj/runtimespec"
 	"go.sbk.wtf/runj/state"
@@ -209,6 +211,7 @@ written`)
 						nsJailcfg.Root = "/"
 						nsJailcfg.Hostname = "netns"
 						nsJailcfg.VNet = "new"
+						nsJailcfg.ChildrenMax = 20
 
 						netnsID = nsJailcfg.Name
 						nsConfPath, err = jail.CreateConfig(nsJailcfg)

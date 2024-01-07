@@ -30,7 +30,10 @@ const (
 {{- if gt (len .VNetInterface) 0 }}
   vnet.interface = "{{ join .VNetInterface ", " }}";
 {{- end }}
-  persist;
+{{- if gt .ChildrenMax 0 }}
+  chidren.max = {{.ChildrenMax}};
+{{ -end }}
+persist;
 }
 `
 )
@@ -44,6 +47,7 @@ type Config struct {
 	IP4Addr       []string
 	VNet          string
 	VNetInterface []string
+	ChildrenMax   int
 }
 
 // CreateConfig creates a config file for the jail(8) command
