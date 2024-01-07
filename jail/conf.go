@@ -32,7 +32,7 @@ const (
 {{- end }}
 {{- if gt .ChildrenMax 0 }}
   chidren.max = {{.ChildrenMax}};
-{{ -end }}
+{{- end }}
 persist;
 }
 `

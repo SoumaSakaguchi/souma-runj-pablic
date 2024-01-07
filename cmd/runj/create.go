@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -9,10 +8,8 @@ import (
 	"path/filepath"
 	"strconv"
 
-	"souma-runj/jail"
-
 	"go.sbk.wtf/runj/hook"
-	//"go.sbk.wtf/runj/jail"
+	"go.sbk.wtf/runj/jail"
 	"go.sbk.wtf/runj/oci"
 	"go.sbk.wtf/runj/runtimespec"
 	"go.sbk.wtf/runj/state"
@@ -249,11 +246,11 @@ written`)
 				if err := jail.CreateJail(cmd.Context(), nsConfPath); err != nil {
 					return err
 				}
-				if err := CreateNestedJail(cmd.Context(), confPath, netnsID); err != nil {
+				if err := jail.CreateNestedJail(cmd.Context(), confPath, netnsID); err != nil {
 					return err
 				}
 			} else if ociConfig.FreeBSD.Network.VNet.Mode == "share" {
-				if err := CreateNestedJail(cmd.Context(), confPath, netnsID); err != nil {
+				if err := jail.CreateNestedJail(cmd.Context(), confPath, netnsID); err != nil {
 					return err
 				}
 			}
@@ -306,13 +303,4 @@ written`)
 		return nil
 	}
 	return create
-}
-
-func CreateNestedJail(ctx context.Context, confPath string, jid string) error {
-	cmd := exec.CommandContext(ctx, "jexec", jid, "jail", "-cf", confPath)
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		fmt.Fprintln(os.Stderr, string(out))
-	}
-	return err
 }

@@ -17,6 +17,16 @@ func CreateJail(ctx context.Context, confPath string) error {
 	return err
 }
 
+// CreateNestJail wraps the jail(8) and jexec(8) command to crate a jail in existing jail
+func CreateNestedJail(ctx context.Context, confPath string, jid string) error {
+	cmd := exec.CommandContext(ctx, "jexec", jid, "jail", "-cf", confPath)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, string(out))
+	}
+	return err
+}
+
 // DestroyJail wraps the jail(8) command to destroy a jail
 func DestroyJail(ctx context.Context, confPath, jail string) error {
 	cmd := exec.CommandContext(ctx, "jail", "-f", confPath, "-r", jail)
