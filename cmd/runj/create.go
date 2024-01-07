@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"strconv"
 
-	"github.com/oss-fun/souma-runj/jail"
+	"souma-runj/jail"
 
 	"go.sbk.wtf/runj/hook"
 	//"go.sbk.wtf/runj/jail"
@@ -117,9 +117,6 @@ written`)
 		false,
 		`netns-compatible mode`)
 	create.RunE = func(cmd *cobra.Command, args []string) (err error) {
-		if netnsCompat {
-			fmt.Println("netns-Compatible mode ON")
-		}
 		disableUsage(cmd)
 		id := args[0]
 		var s *state.State
@@ -195,7 +192,8 @@ written`)
 			if ociConfig.FreeBSD.Network.VNet != nil {
 				if netnsCompat {
 					if ociConfig.FreeBSD.Network.VNet.Mode == "new" { /* create new netns & nest container */
-						nsState, err = state.Create("netns", "")
+						netnsID := "netns1"
+						nsState, err = state.Create(netnsID, "")
 						if err != nil {
 							return err
 						}
@@ -203,22 +201,19 @@ written`)
 							if err == nil {
 								nsState.Status = state.StatusCreated
 							} else {
-								state.Remove("netns")
+								state.Remove(netnsID)
 							}
 						}()
 
-						nsJailcfg.Name = "netns"
+						nsJailcfg.Name = netnsID
 						nsJailcfg.Root = "/"
-						nsJailcfg.Hostname = "netns"
 						nsJailcfg.VNet = "new"
 						nsJailcfg.ChildrenMax = 20
 
-						netnsID = nsJailcfg.Name
 						nsConfPath, err = jail.CreateConfig(nsJailcfg)
 						if err != nil {
 							return err
 						}
-						fmt.Println(nsConfPath)
 						jailcfg.VNet = "inherit"
 					} else if ociConfig.FreeBSD.Network.VNet.Mode == "share" { /* nest container in existing netns */
 						if ociConfig.FreeBSD.Network.VNet.JID == "" {
@@ -227,7 +222,6 @@ written`)
 						jailcfg.VNet = "inherit"
 						jailcfg.VNetInterface = ociConfig.FreeBSD.Network.VNet.Interfaces
 						netnsID = string(ociConfig.FreeBSD.Network.VNet.JID) // netns jailID
-						fmt.Println(netnsID)
 					} else if ociConfig.FreeBSD.Network.VNet.Mode == "inherit" { /* create container without vnet */
 						jailcfg.VNet = string(ociConfig.FreeBSD.Network.VNet.Mode)
 						jailcfg.VNetInterface = ociConfig.FreeBSD.Network.VNet.Interfaces
