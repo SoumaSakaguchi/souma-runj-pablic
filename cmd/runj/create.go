@@ -190,7 +190,7 @@ written`)
 				if netnsCompat {
 					if ociConfig.FreeBSD.Network.VNet.Mode == "new" { /* create new netns & nest container */
 						netnsID = "netns1"
-						nsState, err = state.Create(netnsID, "")
+						nsState, err = state.Create(netnsID, state.NsDir(netnsID))
 						if err != nil {
 							return err
 						}

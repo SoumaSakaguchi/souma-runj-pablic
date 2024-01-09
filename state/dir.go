@@ -7,6 +7,7 @@ import (
 
 const (
 	defaultStateDir = "/var/lib/runj/jails"
+	netnsDir        = "/var/run/netns"
 	stateDir        = defaultStateDir
 )
 
@@ -17,11 +18,25 @@ func Create(id, bundle string) (*State, error) {
 		Bundle: bundle,
 		Status: StatusCreating,
 	}
+
+	if s.Bundle != NsDir(id) {
+		err := os.MkdirAll(Dir(id), 0755)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		err := os.MkdirAll(NsDir(id), 0755)
+		if err != nil {
+			return nil, err
+		}
+	}
+	/*
 	err := os.MkdirAll(Dir(id), 0755)
 	if err != nil {
 		return nil, err
 	}
-	err = s.initialize()
+	*/
+	err := s.initialize()
 	if err != nil {
 		return nil, err
 	}
@@ -31,6 +46,11 @@ func Create(id, bundle string) (*State, error) {
 // Dir returns the state directory for a container
 func Dir(id string) string {
 	return filepath.Join(stateDir, id)
+}
+
+// NsDir return the staet directory for a netns
+func NsDir(id string) string {
+	return filepath.Join(netnsDir, id)
 }
 
 // Remove removes the state for a container
