@@ -22,7 +22,6 @@ func main() {
 	rootCmd.AddCommand(deleteCommand())
 	rootCmd.AddCommand(extCommand())
 	rootCmd.AddCommand(demoCommand())
-	rootCmd.AddCommand(create_netnsCommand())
 	err := rootCmd.Execute()
 	if err != nil {
 		code := 1
