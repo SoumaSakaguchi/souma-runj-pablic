@@ -10,6 +10,7 @@ import (
 
 	"go.sbk.wtf/runj/hook"
 	"go.sbk.wtf/runj/jail"
+	"go.sbk.wtf/runj/netns"
 	"go.sbk.wtf/runj/oci"
 	"go.sbk.wtf/runj/runtimespec"
 	"go.sbk.wtf/runj/state"
@@ -190,7 +191,7 @@ written`)
 				if netnsCompat {
 					if ociConfig.FreeBSD.Network.VNet.Mode == "new" { /* create new netns & nest container */
 						netnsID = "netns1"
-						nsState, err = state.Create(netnsID, state.NsDir(netnsID))
+						nsState, err = netns.StateCreate(netnsID)
 						if err != nil {
 							return err
 						}
@@ -198,18 +199,11 @@ written`)
 							if err == nil {
 								nsState.Status = state.StatusCreated
 							} else {
-								state.Remove(netnsID)
+								netns.Remove(netnsID)
 							}
 						}()
 
-						nsJailcfg = &jail.Config {
-							Name:        netnsID,
-							Root:        "/",
-							VNet:        "new",
-							ChildrenMax: 20,
-						}
-
-						nsConfPath, err = jail.CreateConfig(nsJailcfg)
+						nsConfPath, err = netns.NsCreateConfig(netnsID)
 						if err != nil {
 							return err
 						}
