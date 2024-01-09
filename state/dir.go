@@ -19,23 +19,10 @@ func Create(id, bundle string) (*State, error) {
 		Status: StatusCreating,
 	}
 
-	if s.Bundle != NsDir(id) {
-		err := os.MkdirAll(Dir(id), 0755)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		err := os.MkdirAll(NsDir(id), 0755)
-		if err != nil {
-			return nil, err
-		}
-	}
-	/*
 	err := os.MkdirAll(Dir(id), 0755)
 	if err != nil {
 		return nil, err
 	}
-	*/
 	err := s.initialize()
 	if err != nil {
 		return nil, err
@@ -48,10 +35,12 @@ func Dir(id string) string {
 	return filepath.Join(stateDir, id)
 }
 
+/*
 // NsDir return the staet directory for a netns
 func NsDir(id string) string {
 	return filepath.Join(netnsDir, id)
 }
+*/
 
 // Remove removes the state for a container
 func Remove(id string) error {
