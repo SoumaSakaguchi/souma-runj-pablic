@@ -177,10 +177,9 @@ written`)
 		}
 
 		var (
-			nsState    *state.State
-			nsJailcfg  *jail.Config
-			nsConfPath string
 			netnsID    string
+			nsState    *state.State
+			nsConfPath string
 		)
 		if ociConfig.FreeBSD != nil && ociConfig.FreeBSD.Network != nil {
 			if ociConfig.FreeBSD.Network.IPv4 != nil {
