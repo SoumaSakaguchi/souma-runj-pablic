@@ -52,7 +52,7 @@ type Config struct {
 
 // CreateConfig creates a config file for the jail(8) command
 func CreateConfig(config *Config) (string, error) {
-	cfg, err := renderConfig(config)
+	cfg, err := RenderConfig(config)
 	if err != nil {
 		return "", err
 	}
@@ -79,7 +79,7 @@ func ConfPath(id string) string {
 	return filepath.Join(state.Dir(id), confName)
 }
 
-func renderConfig(config *Config) (string, error) {
+func RenderConfig(config *Config) (string, error) {
 	cfg, err := template.New("config").Funcs(map[string]interface{}{
 		"join": func(elems []string, sep string) string {
 			return strings.Join(elems, sep)
