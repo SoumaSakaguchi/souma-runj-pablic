@@ -23,7 +23,7 @@ func Create(id, bundle string) (*State, error) {
 	if err != nil {
 		return nil, err
 	}
-	err := s.initialize()
+	err = s.initialize()
 	if err != nil {
 		return nil, err
 	}
