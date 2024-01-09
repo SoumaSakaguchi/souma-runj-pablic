@@ -38,5 +38,5 @@ func NsCreateConfig(id string) (string, error) {
 }
 
 func NsConfPath(id string) string {
-	return filepath.Json(Dir(id), state.confName)
+	return filepath.Json(NaDir(id), state.confName)
 }

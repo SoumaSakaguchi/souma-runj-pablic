@@ -15,7 +15,7 @@ const (
 func StateCreate(id string) (*state.State, error) {
 	s := &state.State {
 		ID:     id,
-		Bundle: Dir(id),
+		Bundle: NsDir(id),
 		Status: state.StatusCreating,
 	}
 	err := os.MkdirAll(Dir(id), 0755)
@@ -23,12 +23,12 @@ func StateCreate(id string) (*state.State, error) {
 		return nil, err
 	}
 
-	_, err = os.OpenFile(filepath.Join(Dir(s.ID), state.stateFile), os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0600)
+	_, err = os.OpenFile(filepath.Join(NsDir(s.ID), state.stateFile), os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0600)
 	if err != nil {
 		return nil, err
 	}
 
-	f, err := os.CreateTemp(Dir(s.ID), "state")
+	f, err := os.CreateTemp(NsDir(s.ID), "state")
 	if err != nil {
 		return nil, err
 	}
@@ -46,10 +46,14 @@ func StateCreate(id string) (*state.State, error) {
 	if err != nil {
 		return nil, err
 	}
-	os.Rename(f.Name(), filepath.Join(Dir(s.ID), state.stateFile))
+	os.Rename(f.Name(), filepath.Join(NsDir(s.ID), state.stateFile))
 	return s, nil
 }
 
-func Dir(id string) string {
+func NsDir(id string) string {
 	return filepath.Join(netnsDir, id)
+}
+
+func Remove(id string) error {
+	return os.RemoveAll(NsDir(id))
 }
