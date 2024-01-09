@@ -18,7 +18,7 @@ func StateCreate(id string) (*state.State, error) {
 		Bundle: NsDir(id),
 		Status: state.StatusCreating,
 	}
-	err := os.MkdirAll(Dir(id), 0755)
+	err := os.MkdirAll(NsDir(id), 0755)
 	if err != nil {
 		return nil, err
 	}

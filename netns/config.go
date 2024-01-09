@@ -2,6 +2,7 @@ package netns
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 
 	"go.sbk.wtf/runj/jail"
@@ -9,7 +10,7 @@ import (
 )
 
 func NsCreateConfig(id string) (string, error) {
-	config = &jail.Config {
+	config := &jail.Config {
 		Name:        id,
 		Root:        "/",
 		VNet:        "new",
@@ -38,5 +39,5 @@ func NsCreateConfig(id string) (string, error) {
 }
 
 func NsConfPath(id string) string {
-	return filepath.Json(NaDir(id), state.confName)
+	return filepath.Join(NsDir(id), state.confName)
 }
