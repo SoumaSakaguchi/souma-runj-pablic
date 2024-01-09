@@ -48,7 +48,7 @@ func TestRenderConfigGolden(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			expected, err := os.ReadFile(filepath.Join("testdata", fmt.Sprintf("%s.conf", tc.name)))
 			assert.NoError(t, err, "test data")
-			actual, err := renderConfig(&tc.config)
+			actual, err := RenderConfig(&tc.config)
 			assert.NoError(t, err, "render")
 			assert.Equal(t, string(expected), actual)
 		})
