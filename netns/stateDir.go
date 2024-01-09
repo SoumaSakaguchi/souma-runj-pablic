@@ -23,7 +23,7 @@ func StateCreate(id string) (*state.State, error) {
 		return nil, err
 	}
 
-	_, err = os.OpenFile(filepath.Join(NsDir(s.ID), state.stateFile), os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0600)
+	_, err = os.OpenFile(filepath.Join(NsDir(s.ID), "state.json"), os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0600)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +46,7 @@ func StateCreate(id string) (*state.State, error) {
 	if err != nil {
 		return nil, err
 	}
-	os.Rename(f.Name(), filepath.Join(NsDir(s.ID), state.stateFile))
+	os.Rename(f.Name(), filepath.Join(NsDir(s.ID), "state.json"))
 	return s, nil
 }
 

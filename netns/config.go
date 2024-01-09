@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 
 	"go.sbk.wtf/runj/jail"
-	"go.sbk.wtf/runj/state"
 )
 
 func NsCreateConfig(id string) (string, error) {
@@ -16,7 +15,7 @@ func NsCreateConfig(id string) (string, error) {
 		VNet:        "new",
 		ChildrenMax: 20,
 	}
-	cfg, err := jail.renderConfig(config)
+	cfg, err := jail.RenderConfig(config)
 	if err != nil {
 		return "", err
 	}
@@ -39,5 +38,5 @@ func NsCreateConfig(id string) (string, error) {
 }
 
 func NsConfPath(id string) string {
-	return filepath.Join(NsDir(id), state.confName)
+	return filepath.Join(NsDir(id), "jail.conf")
 }
