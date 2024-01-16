@@ -207,13 +207,17 @@ written`)
 							return err
 						}
 						jailcfg.VNet = "inherit"
+						err = netns.CreateSymlink(id ,netnsID)
+						if err != nil {
+							return err
+						}
 					} else if ociConfig.FreeBSD.Network.VNet.Mode == "share" { /* nest container in existing netns */
-						if ociConfig.FreeBSD.Network.VNet.JID == "" {
+						if ociConfig.FreeBSD.Network.VNet.PATH == "" {
 							return fmt.Errorf("VNet.Mode==share requires netns Jail ID")
 						}
 						jailcfg.VNet = "inherit"
 						jailcfg.VNetInterface = ociConfig.FreeBSD.Network.VNet.Interfaces
-						netnsID = string(ociConfig.FreeBSD.Network.VNet.JID) // netns jailID
+						netnsID = netns.LoadSymlink(ociConfig.FreeBSD.Network.VNet.Path) // netns jailID
 					} else if ociConfig.FreeBSD.Network.VNet.Mode == "inherit" { /* create container without vnet */
 						jailcfg.VNet = string(ociConfig.FreeBSD.Network.VNet.Mode)
 						jailcfg.VNetInterface = ociConfig.FreeBSD.Network.VNet.Interfaces
@@ -222,8 +226,8 @@ written`)
 					if ociConfig.FreeBSD.Network.VNet.Mode == "share" {
 						return fmt.Errorf("VNet.Mode==share is option added for --netns-compat")
 					}
-					if ociConfig.FreeBSD.Network.VNet.JID != "" {
-						return fmt.Errorf("VNet.JID is option added for --netns-compat")
+					if ociConfig.FreeBSD.Network.VNet.PATH != "" {
+						return fmt.Errorf("VNet.PATH is option added for --netns-compat")
 					}
 					jailcfg.VNet = string(ociConfig.FreeBSD.Network.VNet.Mode)
 					jailcfg.VNetInterface = ociConfig.FreeBSD.Network.VNet.Interfaces
