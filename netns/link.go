@@ -1,6 +1,7 @@
 package netns
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -12,7 +13,7 @@ const (
 )
 
 func CreateSymlink(jailID string, netnsID string) error {
-	err := os.Symlink(filepath.join(state.Dir(jailID), netnsLink), NsDir(netnsID))
+	err := os.Symlink(filepath.Join(state.Dir(jailID), netnsLink), NsDir(netnsID))
 	if err != nil {
 		return err
 	}
@@ -27,7 +28,7 @@ func LoadSymlink(path string) (string, error) {
 
 	var realPath string
 	if info.Mode()&os.ModeSymlink == os.ModeSymlink {
-		realPath, err = os.Readlink(path)a
+		realPath, err = os.Readlink(path)
 		if err != nil{
 			return "", err
 		}
