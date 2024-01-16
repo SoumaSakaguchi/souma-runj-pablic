@@ -217,7 +217,10 @@ written`)
 						}
 						jailcfg.VNet = "inherit"
 						jailcfg.VNetInterface = ociConfig.FreeBSD.Network.VNet.Interfaces
-						netnsID = netns.LoadSymlink(ociConfig.FreeBSD.Network.VNet.Path) // netns jailID
+						netnsID, err = netns.LoadSymlink(ociConfig.FreeBSD.Network.VNet.PATH) // netns jailID
+						if err != nil {
+							return err
+						}
 					} else if ociConfig.FreeBSD.Network.VNet.Mode == "inherit" { /* create container without vnet */
 						jailcfg.VNet = string(ociConfig.FreeBSD.Network.VNet.Mode)
 						jailcfg.VNetInterface = ociConfig.FreeBSD.Network.VNet.Interfaces
