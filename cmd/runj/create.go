@@ -189,11 +189,11 @@ written`)
 			if ociConfig.FreeBSD.Network.VNet != nil {
 				if netnsCompat {
 					if ociConfig.FreeBSD.Network.VNet.Mode == "new" { /* create new netns & nest container */
-						netnsID = "netns1"
-						nsState, err = netns.StateCreate(netnsID)
+						nsState, err = netns.StateCreate()
 						if err != nil {
 							return err
 						}
+						netnsID = nsState.ID
 						defer func() {
 							if err == nil {
 								nsState.Status = state.StatusCreated
