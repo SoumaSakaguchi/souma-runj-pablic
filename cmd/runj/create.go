@@ -207,7 +207,7 @@ written`)
 							return err
 						}
 						jailcfg.VNet = "inherit"
-						err = netns.CreateSymlink(id ,netnsID)
+						err = netns.CreateSymlink(netnsID, id)
 						if err != nil {
 							return err
 						}
