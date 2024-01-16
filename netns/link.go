@@ -12,8 +12,8 @@ const (
 	netnsLink = "netns"
 )
 
-func CreateSymlink(jailID string, netnsID string) error {
-	err := os.Symlink(filepath.Join(state.Dir(jailID), netnsLink), NsDir(netnsID))
+func CreateSymlink(netnsID, jailID string) error {
+	err := os.Symlink(NsDir(netnsID), filepath.Join(state.Dir(jailID), netnsLink))
 	if err != nil {
 		return err
 	}
