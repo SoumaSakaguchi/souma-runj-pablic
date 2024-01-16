@@ -12,23 +12,26 @@ const (
 	netnsDir = "/var/run/netns"
 )
 
-func StateCreate(id string) (*state.State, error) {
+func StateCreate() (*state.State, error) {
+	err := os.MkdirAll(netnsDir, 0755)
+	if err != nil {
+		return nil, err
+	}
+	path, err = os.MkdirTemp(netnsDir, "netns")
+	if err != nil {
+		return nil, err
+	}
 	s := &state.State {
-		ID:     id,
-		Bundle: NsDir(id),
+		ID:     filepath.Base(path),
+		Bundle: path,
 		Status: state.StatusCreating,
 	}
-	err := os.MkdirAll(NsDir(id), 0755)
+	_, err = os.OpenFile(filepath.Join(path, "state.json"), os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0600)
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = os.OpenFile(filepath.Join(NsDir(s.ID), "state.json"), os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0600)
-	if err != nil {
-		return nil, err
-	}
-
-	f, err := os.CreateTemp(NsDir(s.ID), "state")
+	f, err := os.CreateTemp(path, "state")
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +49,7 @@ func StateCreate(id string) (*state.State, error) {
 	if err != nil {
 		return nil, err
 	}
-	os.Rename(f.Name(), filepath.Join(NsDir(s.ID), "state.json"))
+	os.Rename(f.Name(), filepath.Join(path, "state.json"))
 	return s, nil
 }
 
