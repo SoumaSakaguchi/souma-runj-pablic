@@ -225,7 +225,7 @@ type FreeBSDVNet struct {
 	// host.
 	Interfaces []string `json:"interfaces,omitempty"`
 
-	JID string `json:"jid,omitempty"`
+	PATH string `json:"jid,omitempty"`
 }
 
 const (
