@@ -221,6 +221,10 @@ written`)
 						if err != nil {
 							return err
 						}
+						err = netns.CreateSymlink(netnsID, id)
+						if err != nil {
+							return err
+						}
 					} else if ociConfig.FreeBSD.Network.VNet.Mode == "inherit" { /* create container without vnet */
 						jailcfg.VNet = string(ociConfig.FreeBSD.Network.VNet.Mode)
 						jailcfg.VNetInterface = ociConfig.FreeBSD.Network.VNet.Interfaces
