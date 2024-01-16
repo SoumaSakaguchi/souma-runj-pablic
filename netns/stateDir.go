@@ -17,7 +17,7 @@ func StateCreate() (*state.State, error) {
 	if err != nil {
 		return nil, err
 	}
-	path, err = os.MkdirTemp(netnsDir, "netns")
+	path, err := os.MkdirTemp(netnsDir, "netns")
 	if err != nil {
 		return nil, err
 	}
