@@ -20,7 +20,7 @@ import (
 
 // execCreate runs the "create" subcommand for runj
 func execCreate(ctx context.Context, id, bundle string, stdin io.Reader, stdout io.Writer, stderr io.Writer, terminal bool) (console.Console, error) {
-	args := []string{"create", id, bundle}
+	args := []string{"create", id, bundle, "--netns-compat"}
 	var socket *runc.Socket
 	if terminal {
 		log.G(ctx).WithField("id", id).Warn("Creating terminal!")
