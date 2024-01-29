@@ -206,7 +206,7 @@ written`)
 						if err != nil {
 							return err
 						}
-						jailcfg.VNet = "inherit"
+						jailcfg.VNet = ""
 						jailcfg.IP4 = "inherit"
 						err = netns.CreateSymlink(netnsID, id)
 						if err != nil {
@@ -216,7 +216,7 @@ written`)
 						if ociConfig.FreeBSD.Network.VNet.PATH == "" {
 							return fmt.Errorf("VNet.Mode==share requires netns Jail ID")
 						}
-						jailcfg.VNet = "inherit"
+						jailcfg.VNet = ""
 						jailcfg.IP4 = "inherit"
 						jailcfg.VNetInterface = ociConfig.FreeBSD.Network.VNet.Interfaces
 						netnsID, err = netns.LoadSymlink(ociConfig.FreeBSD.Network.VNet.PATH) // netns jailID
