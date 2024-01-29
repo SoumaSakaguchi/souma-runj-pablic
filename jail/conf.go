@@ -33,6 +33,7 @@ const (
 {{- if gt .ChildrenMax 0 }}
   children.max = {{.ChildrenMax}};
 {{- end }}
+allow.raw_sockets;
 persist;
 }
 `
