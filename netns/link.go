@@ -29,11 +29,20 @@ func LoadSymlink(path string) (string, error) {
 	var realPath string
 	if info.Mode()&os.ModeSymlink == os.ModeSymlink {
 		realPath, err = os.Readlink(path)
-		if err != nil{
+		if err != nil {
 			return "", err
 		}
 	} else {
 		return "", fmt.Errorf("Path is not symboliclink")
 	}
 	return filepath.Base(realPath), nil
+}
+
+func GetByJailID(jailID string) (string, error) {
+	netnsID, err = LoadSymlink(filepath.json(state.Dir(jailID), netnsLink))
+	if err != nil {
+		return "", err
+	}
+
+	return netnsID, nil
 }

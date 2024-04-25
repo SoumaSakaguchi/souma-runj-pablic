@@ -33,6 +33,12 @@ func deleteCommand() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			disableUsage(cmd)
 			id := args[0]
+			var netnsCompat bool
+			netnsID, err := netns.GetByJailID(id)
+			if err == nil {
+				netnsCompat = true
+			}
+
 			s, err := state.Load(id)
 			if err != nil {
 				return err
