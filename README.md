@@ -1,3 +1,7 @@
+# 本レポジトリに関する注意点
+本レポジトリは、ポートフォリオ公開用に、一時的にPublicにしているものになります。
+ポートフォリオの利用を終了すると同時に、Privateに戻りますので、ご了承ください。
+
 # runj
 
 runj is an experimental, proof-of-concept
